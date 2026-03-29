@@ -1,0 +1,27 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:OnFlight.App.Converters"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="OnFlight.App.App"
+             RequestedThemeVariant="Default">
+
+    <Application.Styles>
+        <SimpleTheme />
+        <materialIcons:MaterialIconStyles />
+        <StyleInclude Source="avares://OnFlight.App/Styles/Theme.axaml" />
+    </Application.Styles>
+
+    <Application.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:StatusToBrushConverter x:Key="StatusToBrush"/>
+        <converters:NodeTypeToIconConverter x:Key="NodeTypeToIcon"/>
+        <converters:NodeTypeToRotationConverter x:Key="NodeTypeToRotation"/>
+        <converters:DepthToMarginConverter x:Key="DepthToMargin"/>
+        <converters:StatusToStrikethroughConverter x:Key="StatusToStrikethrough"/>
+        <converters:HexToBrushConverter x:Key="HexToBrush"/>
+        <converters:BoolToOpacityConverter x:Key="BoolToOpacity"/>
+        <converters:DoneToIconKindConverter x:Key="DoneToIcon"/>
+        <converters:DoneToBrushConverter x:Key="DoneToBrush"/>
+        <converters:DoneToTextBrushConverter x:Key="DoneToTextBrush"/>
+    </Application.Resources>
+</Application>

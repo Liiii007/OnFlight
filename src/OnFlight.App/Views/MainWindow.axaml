@@ -1,0 +1,660 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mi="using:Material.Icons.Avalonia"
+        xmlns:vm="using:OnFlight.App.ViewModels"
+        x:Class="OnFlight.App.Views.MainWindow"
+        x:Name="Root"
+        Title="OnFlight - Todo"
+        Width="1100" Height="700"
+        MinWidth="900" MinHeight="500"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        SystemDecorations="BorderOnly">
+
+    <Grid x:Name="MainGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" MinWidth="160" MaxWidth="320"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*" MinWidth="300"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="340" MinWidth="260"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Opaque background layer (beneath acrylic, spanning full grid) -->
+        <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="5"
+                Background="{DynamicResource AppBackground}" IsHitTestVisible="False"/>
+
+        <!-- ═══════ Row 0: Custom Title Bar ═══════ -->
+        <!-- [Style:Acrylic] [Style:InlineColors] Title bar left: sidebar area (acrylic) -->
+        <Panel Grid.Row="0" Grid.Column="0" PointerPressed="OnTitleBarPointerPressed">
+            <ExperimentalAcrylicBorder x:Name="TitleBarSidebarAcrylic" IsHitTestVisible="False">
+                <ExperimentalAcrylicBorder.Material>
+                    <ExperimentalAcrylicMaterial
+                        BackgroundSource="Digger"
+                        TintColor="#F7F7FA"
+                        TintOpacity="0.8"
+                        MaterialOpacity="0.7"/>
+                </ExperimentalAcrylicBorder.Material>
+            </ExperimentalAcrylicBorder>
+            <TextBlock Text="OnFlight" FontSize="13" FontWeight="SemiBold"
+                       Foreground="{DynamicResource PrimaryText}"
+                       VerticalAlignment="Center" Margin="12,0,0,0"/>
+        </Panel>
+
+        <!-- [Style:Icons] [Style:Fab] Title bar center: content area -->
+        <Border Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
+                Background="{DynamicResource ContentBackground}"
+                PointerPressed="OnTitleBarPointerPressed">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0" Spacing="4">
+                <Button Classes="Fab" ToolTip.Tip="Floating Window" Click="OnOpenFloatingWindow"
+                        Padding="5,4" Height="24" Width="24"
+                        Background="{DynamicResource TitleBarActionBg}" Foreground="{DynamicResource TitleBarActionFg}">
+                    <mi:MaterialIcon Kind="PictureInPictureBottomRight" Width="11" Height="11"
+                                     Foreground="{DynamicResource TitleBarActionFg}"/>
+                </Button>
+                <Button Classes="Fab" Command="{Binding StartNewRunCommand}"
+                        ToolTip.Tip="Start New Run"
+                        Padding="5,4" Height="24" Width="24"
+                        Background="{DynamicResource TitleBarActionBg}" Foreground="{DynamicResource TitleBarActionFg}">
+                    <mi:MaterialIcon Kind="Play" Width="11" Height="11"
+                                     Foreground="{DynamicResource TitleBarActionFg}"/>
+                </Button>
+                <Button Classes="Fab" ToolTip.Tip="Settings" Click="OnOpenSettings"
+                        Padding="5,4" Height="24" Width="24"
+                        Background="{DynamicResource TitleBarActionBg}" Foreground="{DynamicResource TitleBarActionFg}">
+                    <mi:MaterialIcon Kind="CogOutline" Width="11" Height="11"
+                                     Foreground="{DynamicResource TitleBarActionFg}"/>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- [Style:WinBtn] [Style:WinClose] Title bar right: panel area -->
+        <Border Grid.Row="0" Grid.Column="4" Background="{DynamicResource RightPanelBackground}"
+                PointerPressed="OnTitleBarPointerPressed">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                        VerticalAlignment="Center" Spacing="2" Margin="0,0,6,0">
+                <Button Classes="WinBtn" Click="OnMinimizeClick" ToolTip.Tip="Minimize">
+                    <mi:MaterialIcon Kind="WindowMinimize" Width="11" Height="11"/>
+                </Button>
+                <Button Classes="WinBtn" Click="OnMaximizeClick" ToolTip.Tip="Maximize">
+                    <mi:MaterialIcon Kind="WindowMaximize" Width="11" Height="11"
+                                     x:Name="MaximizeIcon"/>
+                </Button>
+                <Button Classes="WinBtn WinClose" Click="OnCloseClick" ToolTip.Tip="Close">
+                    <mi:MaterialIcon Kind="WindowClose" Width="11" Height="11"/>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- ═══════ Row 1: Main Content ═══════ -->
+
+        <!-- [Style:Acrylic] [Style:Icons] ═══════ Col 0: Sidebar — List selector (acrylic) ═══════ -->
+        <Panel Grid.Row="1" Grid.Column="0">
+        <ExperimentalAcrylicBorder x:Name="SidebarBodyAcrylic" IsHitTestVisible="False">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    TintColor="#F7F7FA"
+                    TintOpacity="0.8"
+                    MaterialOpacity="0.7"/>
+            </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
+        <DockPanel Margin="0,8,0,12">
+
+                <!-- Sidebar bottom: New List button -->
+                <Panel DockPanel.Dock="Bottom" Margin="8,8,8,0" Height="38">
+                    <ExperimentalAcrylicBorder x:Name="NewListBtnAcrylic"
+                                               CornerRadius="{DynamicResource InputCornerRadius}"
+                                               IsHitTestVisible="False">
+                        <ExperimentalAcrylicBorder.Material>
+                            <ExperimentalAcrylicMaterial
+                                BackgroundSource="Digger"
+                                TintColor="#FFFFFF"
+                                TintOpacity="0.85"
+                                MaterialOpacity="0.6"/>
+                        </ExperimentalAcrylicBorder.Material>
+                    </ExperimentalAcrylicBorder>
+                    <Button Classes="PlainIconBtn" BorderThickness="0"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left" Padding="10,0"
+                            CornerRadius="{DynamicResource InputCornerRadius}"
+                            Command="{Binding CreateNewListCommand}"
+                            ToolTip.Tip="New List" VerticalAlignment="Stretch" Cursor="Hand">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Border Background="{DynamicResource AccentBlueBrush}"
+                                    CornerRadius="10" Width="20" Height="20"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <mi:MaterialIcon Kind="Plus" Width="12" Height="12"
+                                                 Foreground="White"
+                                                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="New List" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryText}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Panel>
+
+                <!-- List entries -->
+                <ListBox ItemsSource="{Binding RootLists}"
+                         SelectedItem="{Binding SelectedRootList}"
+                         Background="Transparent" BorderThickness="0"
+                         Margin="8,0"
+                         Tapped="OnSidebarListTapped">
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Padding" Value="10,8"/>
+                            <Setter Property="Margin" Value="0,1"/>
+                            <Setter Property="CornerRadius" Value="8"/>
+                            <Setter Property="FontSize" Value="13"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                        </Style>
+                    </ListBox.Styles>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel>
+                                <Border DockPanel.Dock="Left" Background="{DynamicResource AccentBlueBrush}"
+                                        CornerRadius="10" Width="20" Height="20" Margin="0,0,8,0"
+                                        VerticalAlignment="Center">
+                                    <mi:MaterialIcon Kind="FormatListBulleted"
+                                                     Width="12" Height="12" Foreground="White"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource PrimaryText}"/>
+                            </DockPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Panel>
+
+        <!-- Splitter between sidebar and content -->
+        <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
+                      Width="1" MinWidth="1" Padding="0" Margin="0"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch" Background="Transparent">
+            <GridSplitter.Template>
+                <ControlTemplate>
+                    <Border Background="Transparent" Width="1" MinWidth="1" Cursor="SizeWestEast"/>
+                </ControlTemplate>
+            </GridSplitter.Template>
+        </GridSplitter>
+
+        <!-- Background fill spanning splitter columns to avoid gaps -->
+        <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4"
+                Background="{DynamicResource ContentBackground}" IsHitTestVisible="False"/>
+
+        <!-- [Style:ListItem] [Style:CheckBtn] [Style:InlineRename] ═══════ Col 2: Main content ═══════ -->
+        <DockPanel Grid.Row="1" Grid.Column="2" Margin="16,16,16,0">
+
+            <!-- Top: list name + rename + breadcrumbs + progress -->
+            <StackPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+
+                <!-- List title row: name (click to rename) + delete -->
+                <DockPanel Margin="0,0,0,2">
+                    <!-- Rename mode -->
+                    <Grid IsVisible="{Binding IsRenamingList}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Text="{Binding RenamingListName}"
+                                 Watermark="List name" FontSize="20" FontWeight="SemiBold"
+                                 VerticalContentAlignment="Center"
+                                 KeyDown="OnRenameKeyDown"
+                                 x:Name="RenameTextBox"/>
+                        <Button Grid.Column="1" Classes="IconBtn"
+                                Command="{Binding CommitRenameListCommand}"
+                                ToolTip.Tip="Confirm" Margin="4,0,0,0">
+                            <mi:MaterialIcon Kind="Check" Width="14" Height="14"
+                                             Foreground="White"/>
+                        </Button>
+                    </Grid>
+                    <!-- Display mode -->
+                    <DockPanel IsVisible="{Binding !IsRenamingList}">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                                    HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <Border IsVisible="{Binding IsDraft}" CornerRadius="4"
+                                    Background="{DynamicResource AccentOrangeBrush}"
+                                    Padding="5,2" Margin="0,0,4,0" VerticalAlignment="Center"
+                                    ToolTip.Tip="Draft mode — changes won't be saved">
+                                <TextBlock Text="TMP" FontSize="10" FontWeight="Bold"
+                                           Foreground="White"/>
+                            </Border>
+                            <Button Classes="PlainIconBtn"
+                                    Command="{Binding DeleteCurrentListCommand}"
+                                    ToolTip.Tip="Delete this list">
+                                <mi:MaterialIcon Kind="DeleteOutline" Width="14" Height="14" Foreground="{DynamicResource SecondaryText}"/>
+                            </Button>
+                        </StackPanel>
+                        <Button Background="Transparent" BorderThickness="0" Padding="2,0"
+                                Command="{Binding BeginRenameListCommand}" Cursor="Hand"
+                                ToolTip.Tip="Click to rename" HorizontalContentAlignment="Left"
+                                CornerRadius="0" Width="NaN" Height="NaN">
+                            <TextBlock Text="{Binding CurrentListName}" FontSize="24" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryText}"/>
+                        </Button>
+                    </DockPanel>
+                </DockPanel>
+
+                <!-- Breadcrumbs (only visible in sub-lists) -->
+                <ItemsControl ItemsSource="{Binding Breadcrumbs}" Margin="0,0,0,0"
+                              IsVisible="{Binding IsInSubList}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:BreadcrumbItem}">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="{Binding Name}" Classes="Breadcrumb"
+                                        Command="{Binding #Root.DataContext.NavigateToBreadcrumbCommand}"
+                                        CommandParameter="{Binding}"/>
+                                <TextBlock Text=" › " VerticalAlignment="Center"
+                                           Foreground="{DynamicResource SecondaryText}" Margin="2,0"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Progress -->
+                <Grid Margin="0,6,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ProgressBar Value="{Binding Progress}" Maximum="1"
+                                 Classes="Apple" Grid.Column="0"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0">
+                        <TextBlock Text="{Binding CompletedCount}" FontSize="12"
+                                   Foreground="{DynamicResource SecondaryText}"/>
+                        <TextBlock Text="/" FontSize="12"
+                                   Foreground="{DynamicResource SecondaryText}"/>
+                        <TextBlock Text="{Binding TotalCount}" FontSize="12"
+                                   Foreground="{DynamicResource SecondaryText}"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <!-- Bottom: Add Item -->
+            <Border DockPanel.Dock="Bottom" Margin="0,8,0,12"
+                    Background="{DynamicResource InputBackground}"
+                    BorderBrush="{DynamicResource InputBorderBrush}"
+                    BorderThickness="1" CornerRadius="{DynamicResource InputCornerRadius}"
+                    Height="38">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding NewItemTitle}"
+                             Watermark="Add a new task..."
+                             VerticalContentAlignment="Center"
+                             BorderThickness="0" Background="Transparent"
+                             FontSize="14" Padding="10,0"
+                             KeyDown="OnAddItemKeyDown"/>
+                    <Button Grid.Column="1" Classes="IconBtn"
+                            Command="{Binding AddItemCommand}"
+                            VerticalAlignment="Center" Margin="0,0,4,0"
+                            ToolTip.Tip="Add task">
+                        <mi:MaterialIcon Kind="Plus" Width="14" Height="14"
+                                         Foreground="White"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Center: Item List with drag-reorder -->
+            <Grid>
+                <ScrollViewer x:Name="ItemScrollViewer" VerticalScrollBarVisibility="Auto"
+                              PointerPressed="OnEditorAreaPointerPressed">
+                    <ItemsControl x:Name="ItemListControl"
+                                  ItemsSource="{Binding Items}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:TodoItemViewModel}">
+                                <Border Margin="{Binding Depth, Converter={StaticResource DepthToMargin}}"
+                                        Classes="ListItem DragItem"
+                                        PointerPressed="OnItemPointerPressed"
+                                        PointerMoved="OnItemPointerMoved"
+                                        PointerReleased="OnItemPointerReleased"
+                                        DoubleTapped="OnItemDoubleTapped">
+                                    <StackPanel>
+                                        <DockPanel>
+                                            <!-- Right-side actions -->
+                                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                                                        VerticalAlignment="Center">
+                                                <Button IsVisible="{Binding ShowSubListButton}"
+                                                        Classes="PlainIconBtn"
+                                                        Command="{Binding #Root.DataContext.NavigateToSubListCommand}"
+                                                        CommandParameter="{Binding}" ToolTip.Tip="Open sub-list"
+                                                        Width="28" Height="28">
+                                                    <mi:MaterialIcon Kind="ChevronRight" Width="16" Height="16"
+                                                                     Foreground="{DynamicResource SecondaryText}"/>
+                                                </Button>
+                                                <Button IsVisible="{Binding CanHaveSubList}"
+                                                        Classes="PlainIconBtn"
+                                                        Command="{Binding #Root.DataContext.CreateSubListCommand}"
+                                                        CommandParameter="{Binding}" ToolTip.Tip="Add sub-tasks"
+                                                        Width="28" Height="28" Opacity="0.5">
+                                                    <mi:MaterialIcon Kind="FileTreeOutline" Width="14" Height="14"
+                                                                     Foreground="{DynamicResource SecondaryText}"/>
+                                                </Button>
+                                                <Button IsVisible="{Binding IsForkChild, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"
+                                                        Classes="PlainIconBtn"
+                                                        Command="{Binding #Root.DataContext.DeleteItemCommand}"
+                                                        CommandParameter="{Binding}" ToolTip.Tip="Delete"
+                                                        Width="28" Height="28">
+                                                    <mi:MaterialIcon Kind="DeleteOutline" Width="14" Height="14"
+                                                                     Foreground="{DynamicResource SecondaryText}"/>
+                                                </Button>
+                                            </StackPanel>
+
+                                            <!-- Left content -->
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <!-- Checkbox / Node icon (mutually exclusive) -->
+                                                <Panel Width="24" Height="24" Margin="0,0,4,0"
+                                                       VerticalAlignment="Center">
+                                                    <Button Classes="CheckBtn"
+                                                            IsVisible="{Binding IsCheckableNode}"
+                                                            Command="{Binding #Root.DataContext.ToggleItemCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Width="24" Height="24" Padding="0">
+                                                        <Panel>
+                                                            <mi:MaterialIcon Width="20" Height="20"
+                                                                IsVisible="{Binding !IsRunning}"
+                                                                Kind="{Binding IsDone, Converter={StaticResource DoneToIcon}}"
+                                                                Foreground="{Binding IsDone, Converter={StaticResource DoneToBrush}}"/>
+                                                            <mi:MaterialIcon Width="20" Height="20"
+                                                                IsVisible="{Binding IsRunning}"
+                                                                Kind="Loading"
+                                                                Foreground="{DynamicResource AccentOrangeBrush}"/>
+                                                        </Panel>
+                                                    </Button>
+                                                    <Border IsVisible="{Binding !IsCheckableNode}"
+                                                            Background="{DynamicResource AccentBlueBrush}"
+                                                            CornerRadius="10" Width="20" Height="20"
+                                                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <mi:MaterialIcon Kind="{Binding NodeType, Converter={StaticResource NodeTypeToIcon}}"
+                                                                         Foreground="White"
+                                                                         Width="12" Height="12"
+                                                                         HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                            <mi:MaterialIcon.RenderTransform>
+                                                                <RotateTransform Angle="{Binding NodeType, Converter={StaticResource NodeTypeToRotation}}"/>
+                                                            </mi:MaterialIcon.RenderTransform>
+                                                        </mi:MaterialIcon>
+                                                    </Border>
+                                                </Panel>
+                                                <!-- Title -->
+                                                <TextBlock Text="{Binding Title}" VerticalAlignment="Center"
+                                                           FontSize="13" TextTrimming="CharacterEllipsis"
+                                                           Foreground="{Binding IsDone, Converter={StaticResource DoneToTextBrush}}"
+                                                           IsVisible="{Binding !IsRenaming}"
+                                                           Classes="ItemTitle"
+                                                           Cursor="IBeam"/>
+                                                <TextBox Text="{Binding RenamingTitle}"
+                                                         IsVisible="{Binding IsRenaming}"
+                                                         FontSize="13" Padding="0" Margin="0,-1,0,0"
+                                                         MinHeight="0" Height="20"
+                                                         BorderThickness="0" Background="Transparent"
+                                                         VerticalAlignment="Center"
+                                                         VerticalContentAlignment="Center"
+                                                         Classes="InlineRename"
+                                                         KeyDown="OnItemRenameKeyDown"
+                                                         PropertyChanged="OnRenameBoxPropertyChanged"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <StackPanel Orientation="Horizontal"
+                                                    IsVisible="{Binding IsForkChild}"
+                                                    Margin="22,1,0,0">
+                                            <TextBlock Text="↳ Fork: " FontSize="10"
+                                                       Foreground="{DynamicResource TertiaryText}"/>
+                                            <TextBlock Text="{Binding ParentForkTitle}" FontSize="10"
+                                                       FontStyle="Italic"
+                                                       Foreground="{DynamicResource TertiaryText}"/>
+                                            <TextBlock Text="{Binding ForkTargetListName, StringFormat=' ({0})'}"
+                                                       FontSize="10"
+                                                       Foreground="{DynamicResource TertiaryText}"
+                                                       IsVisible="{Binding ForkTargetListName, Converter={StaticResource BoolToVis}}"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal"
+                                                    IsVisible="{Binding IsSubTaskChild}"
+                                                    Margin="22,1,0,0">
+                                            <TextBlock Text="↳ Sub: " FontSize="10"
+                                                       Foreground="{DynamicResource TertiaryText}"/>
+                                            <TextBlock Text="{Binding ParentTaskTitle}" FontSize="10"
+                                                       FontStyle="Italic"
+                                                       Foreground="{DynamicResource TertiaryText}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Drag ghost overlay -->
+                <Canvas x:Name="DragOverlayCanvas" IsHitTestVisible="False" IsVisible="False"/>
+            </Grid>
+        </DockPanel>
+
+        <!-- Splitter between content and right panel -->
+        <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="3"
+                      Width="1" MinWidth="1" Padding="0" Margin="0"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch" Background="Transparent">
+            <GridSplitter.Template>
+                <ControlTemplate>
+                    <Border Background="Transparent" Width="1" MinWidth="1" Cursor="SizeWestEast"/>
+                </ControlTemplate>
+            </GridSplitter.Template>
+        </GridSplitter>
+
+        <!-- [Style:Card] [Style:ProgressBar] [Style:Icons] ═══════ Col 4: Right Panel — Config + Tabs ═══════ -->
+        <Border Grid.Row="1" Grid.Column="4" Background="{DynamicResource RightPanelBackground}">
+        <TabControl x:Name="PanelTabs" Classes="PanelTabs" Margin="8,16,16,16" FontSize="13">
+
+            <!-- Config Tab -->
+            <TabItem Header="Config">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel DataContext="{Binding ConfigViewModel}" Margin="8"
+                                IsVisible="{Binding IsVisible}">
+                        <TextBox Text="{Binding Title}" Watermark="Title" Margin="0,0,0,12"/>
+                        <TextBox Text="{Binding Description}" Watermark="Description"
+                                 AcceptsReturn="True" MinHeight="60" Margin="0,0,0,12"/>
+                        <ComboBox ItemsSource="{Binding StatusValues}" SelectedItem="{Binding Status}"
+                                  PlaceholderText="Status" Margin="0,0,0,12"/>
+                        <ComboBox ItemsSource="{Binding NodeTypeValues}" SelectedItem="{Binding NodeType}"
+                                  PlaceholderText="Node Type" Margin="0,0,0,12"/>
+
+                        <!-- Loop Config -->
+                        <StackPanel IsVisible="{Binding IsLoopNode}" Margin="0,0,0,12">
+                            <TextBlock Text="Loop Count" FontSize="13"
+                                       Foreground="{DynamicResource SecondaryText}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding LoopCount}"/>
+                        </StackPanel>
+
+                        <!-- Fork Config -->
+                        <StackPanel IsVisible="{Binding IsForkNode}" Margin="0,0,0,12">
+                            <TextBlock Text="Target Task List" FontSize="13"
+                                       Foreground="{DynamicResource SecondaryText}" Margin="0,0,0,4"/>
+                            <ComboBox ItemsSource="{Binding AvailableLists}"
+                                      SelectedItem="{Binding SelectedForkTargetList}"
+                                      PlaceholderText="Select list for branches"/>
+                            <TextBlock Text="Fork will execute all tasks in the selected list as parallel branches."
+                                       FontSize="11" Foreground="{DynamicResource SecondaryText}"
+                                       TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <!-- Join Info -->
+                        <StackPanel IsVisible="{Binding IsJoinNode}" Margin="0,0,0,12">
+                            <TextBlock Text="Join blocks until all preceding Forks and their children are completed."
+                                       FontSize="11" Foreground="{DynamicResource SecondaryText}" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <!-- Branch Config -->
+                        <StackPanel IsVisible="{Binding IsBranchNode}" Margin="0,0,0,12">
+                            <TextBlock Text="Condition" FontSize="13"
+                                       Foreground="{DynamicResource SecondaryText}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding Condition}" Watermark="e.g. count > 3"/>
+                        </StackPanel>
+
+                        <!-- ConsoleExecute Config -->
+                        <StackPanel IsVisible="{Binding IsConsoleExecuteNode}" Margin="0,0,0,12">
+                            <TextBlock Text="Command" FontSize="13"
+                                       Foreground="{DynamicResource SecondaryText}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding Command}" Watermark="powershell command"
+                                     AcceptsReturn="True" MinHeight="60"/>
+                            <TextBlock Text="Working Directory" FontSize="13"
+                                       Foreground="{DynamicResource SecondaryText}" Margin="0,8,0,4"/>
+                            <TextBox Text="{Binding WorkingDirectory}" Watermark="C:\optional\path"/>
+                        </StackPanel>
+
+                        <!-- Auto Advance Config (Task or ConsoleExecute) -->
+                        <StackPanel IsVisible="{Binding IsTaskOrConsoleNode}" Margin="0,0,0,12">
+                            <TextBlock Text="Auto Advance" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource SecondaryText}" Margin="0,0,0,6"/>
+                            <CheckBox IsChecked="{Binding AutoStartWhenPredecessorDone}"
+                                      Content="Auto-start when predecessor done" FontSize="12"
+                                      Margin="0,0,0,4"/>
+                            <CheckBox IsChecked="{Binding AutoAdvanceSuccessor}"
+                                      Content="Auto-advance successor when done" FontSize="12"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Running Tab -->
+            <TabItem Header="Running">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              DataContext="{Binding RunningTaskManager}">
+                    <StackPanel>
+                        <TextBlock Text="No running instances"
+                                   IsVisible="{Binding !Instances.Count}"
+                                   Foreground="{DynamicResource SecondaryText}" FontSize="13"
+                                   Margin="0,8,0,0"/>
+
+                        <ItemsControl ItemsSource="{Binding Instances}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:RunningTaskInstanceViewModel}">
+                                    <Border Classes="Card" Margin="0,0,0,8" Cursor="Hand"
+                                            Padding="12,10"
+                                            PointerReleased="OnRunningCardPointerReleased">
+                                        <StackPanel Spacing="4">
+                                            <DockPanel>
+                                                <Button DockPanel.Dock="Right" HorizontalAlignment="Right"
+                                                        Classes="PlainIconBtn" ToolTip.Tip="Remove"
+                                                        Command="{Binding #Root.DataContext.RunningTaskManager.RemoveInstanceCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Width="24" Height="24">
+                                                    <mi:MaterialIcon Kind="Close" Width="14" Height="14"
+                                                                     Foreground="{DynamicResource SecondaryText}"/>
+                                                </Button>
+                                                <TextBlock Text="{Binding ListName}" FontSize="13"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource PrimaryText}"
+                                                           VerticalAlignment="Center"/>
+                                            </DockPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:MM-dd HH:mm}'}"
+                                                           FontSize="11" Foreground="{DynamicResource SecondaryText}"/>
+                                                <TextBlock Text="{Binding ProgressText}" FontSize="11"
+                                                           Foreground="{DynamicResource AccentGreenBrush}"/>
+                                            </StackPanel>
+                                            <ProgressBar Value="{Binding Progress}" Maximum="1"
+                                                         Classes="Apple"/>
+
+                                            <!-- Archive countdown banner -->
+                                            <Border CornerRadius="6" Padding="8,6" Margin="0,6,0,0"
+                                                    Background="{DynamicResource ArchiveBannerBg}"
+                                                    IsVisible="{Binding IsPendingArchive}">
+                                                <DockPanel>
+                                                    <Button DockPanel.Dock="Right"
+                                                            Background="Transparent" BorderThickness="0"
+                                                            Command="{Binding UndoArchiveCommand}"
+                                                            Content="UNDO" FontSize="11" Cursor="Hand"
+                                                            Foreground="{DynamicResource SecondaryText}"
+                                                            Width="NaN" Height="NaN" CornerRadius="4" Padding="6,2"/>
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <mi:MaterialIcon Kind="ArchiveArrowDown" Width="14" Height="14"
+                                                                         Foreground="{DynamicResource AccentGreenBrush}"
+                                                                         VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Archiving in " FontSize="11"
+                                                                       Foreground="{DynamicResource AccentGreenBrush}"
+                                                                       VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding ArchiveCountdown}" FontSize="11"
+                                                                       Foreground="{DynamicResource AccentGreenBrush}"
+                                                                       VerticalAlignment="Center"/>
+                                                            <TextBlock Text="s..." FontSize="11"
+                                                                       Foreground="{DynamicResource AccentGreenBrush}"
+                                                                       VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </DockPanel>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- History Tab -->
+            <TabItem Header="History">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              DataContext="{Binding HistoryViewModel}">
+                    <ItemsControl ItemsSource="{Binding Logs}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Classes="ListItem">
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right"
+                                                   Text="{Binding Timestamp, StringFormat='{}{0:MM-dd HH:mm}'}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource SecondaryText}"
+                                                   VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <DockPanel>
+                                                <Border DockPanel.Dock="Left"
+                                                        Background="{DynamicResource AccentPurpleBrush}"
+                                                        CornerRadius="10" Width="20" Height="20"
+                                                        VerticalAlignment="Center" Margin="0,0,8,0">
+                                                    <mi:MaterialIcon Kind="History" Width="12" Height="12"
+                                                                     Foreground="White"
+                                                                     HorizontalAlignment="Center"
+                                                                     VerticalAlignment="Center"/>
+                                                </Border>
+                                                <TextBlock Text="{Binding Detail}"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="13"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           Foreground="{DynamicResource PrimaryText}"/>
+                                            </DockPanel>
+                                            <TextBlock Text="{Binding OperationType}"
+                                                       FontSize="10" Margin="28,1,0,0"
+                                                       Foreground="{DynamicResource SecondaryText}"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+        </Border>
+    </Grid>
+</Window>

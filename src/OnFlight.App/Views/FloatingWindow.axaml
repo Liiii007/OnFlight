@@ -1,0 +1,285 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mi="using:Material.Icons.Avalonia"
+        xmlns:vm="using:OnFlight.App.ViewModels"
+        x:Class="OnFlight.App.Views.FloatingWindow"
+        x:Name="Root"
+        Title="OnFlight"
+        SizeToContent="Height" Width="360" MaxHeight="720"
+        SystemDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        CanResize="False">
+
+    <!-- [Style:Shadows] [Style:Acrylic] [Style:CheckBtn] [Style:Icons] -->
+    <Border CornerRadius="{DynamicResource FloatingCornerRadius}" Margin="16"
+            Background="{DynamicResource CardBackground}"
+            BoxShadow="0 3 12 0 #28000000">
+        <Border CornerRadius="{DynamicResource FloatingCornerRadius}" ClipToBounds="True">
+        <DockPanel>
+            <!-- Header bar (acrylic) -->
+            <Panel DockPanel.Dock="Top" PointerPressed="OnHeaderPointerPressed">
+                <ExperimentalAcrylicBorder x:Name="HeaderAcrylic" CornerRadius="12,12,0,0" IsHitTestVisible="False">
+                    <ExperimentalAcrylicBorder.Material>
+                        <ExperimentalAcrylicMaterial
+                            BackgroundSource="Digger"
+                            TintColor="#F0F0F2"
+                            TintOpacity="0.65"
+                            MaterialOpacity="0.45"/>
+                    </ExperimentalAcrylicBorder.Material>
+                </ExperimentalAcrylicBorder>
+                <Border CornerRadius="12,12,0,0" Padding="10,8" Background="Transparent">
+                <DockPanel>
+                    <!-- Right: add + close -->
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                                VerticalAlignment="Center" Spacing="2">
+                        <Button Classes="PlainIconBtn" ToolTip.Tip="Start new run"
+                                Width="20" Height="20">
+                            <mi:MaterialIcon Kind="Plus" Width="12" Height="12"
+                                             Foreground="{DynamicResource IconForeground}"/>
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedRight">
+                                    <StackPanel Width="220" Spacing="8">
+                                        <TextBlock Text="Select a list" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource SecondaryText}"/>
+                                        <ComboBox ItemsSource="{Binding AvailableLists}"
+                                                  SelectedItem="{Binding SelectedNewList}"
+                                                  PlaceholderText="Choose list..."
+                                                  HorizontalAlignment="Stretch" FontSize="12"/>
+                                        <Button Classes="Fab" HorizontalAlignment="Stretch"
+                                                Command="{Binding CreateNewRunCommand}"
+                                                HorizontalContentAlignment="Center"
+                                                Background="{DynamicResource TitleBarActionBg}"
+                                                Foreground="{DynamicResource TitleBarActionFg}"
+                                                Padding="8,6">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <mi:MaterialIcon Kind="Play" Width="14" Height="14"/>
+                                                <TextBlock Text="Start Run" FontSize="12"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                        <Button Classes="PlainIconBtn" Click="OnCloseFloating" ToolTip.Tip="Close"
+                                Width="20" Height="20">
+                            <mi:MaterialIcon Kind="Close" Width="12" Height="12"
+                                             Foreground="{DynamicResource IconForeground}"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Left: prev -->
+                    <Button DockPanel.Dock="Left" Classes="PlainIconBtn"
+                            Command="{Binding PrevInstanceCommand}"
+                            IsVisible="{Binding HasInstances}"
+                            Width="18" Height="18" Margin="0,0,2,0">
+                        <mi:MaterialIcon Kind="ChevronLeft" Width="12" Height="12"
+                                         Foreground="{DynamicResource IconForeground}"/>
+                    </Button>
+                    <!-- Next -->
+                    <Button DockPanel.Dock="Left" Classes="PlainIconBtn"
+                            Command="{Binding NextInstanceCommand}"
+                            IsVisible="{Binding HasInstances}"
+                            Width="18" Height="18" Margin="0,0,4,0">
+                        <mi:MaterialIcon Kind="ChevronRight" Width="12" Height="12"
+                                         Foreground="{DynamicResource IconForeground}"/>
+                    </Button>
+                    <!-- Indicator + progress -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="6">
+                        <TextBlock Text="{Binding CurrentInstance.ListName, FallbackValue='OnFlight'}"
+                                   FontSize="13" FontWeight="Bold"
+                                   Foreground="{DynamicResource PrimaryText}"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" MaxWidth="160"/>
+                        <TextBlock Text="{Binding InstanceIndicator}" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryText}"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding HasInstances}"/>
+                        <TextBlock Text="{Binding CurrentInstance.ProgressText}" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryText}"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding HasInstances}"/>
+                    </StackPanel>
+                </DockPanel>
+                </Border>
+            </Panel>
+
+            <!-- Scrollable content: current instance -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16,0,16,12">
+                <StackPanel>
+                    <!-- No instances -->
+                    <TextBlock Text="No running tasks"
+                               FontSize="13" Foreground="{DynamicResource SecondaryText}"
+                               HorizontalAlignment="Center" Margin="0,12"
+                               IsVisible="{Binding !HasInstances}"/>
+
+                    <!-- Current instance -->
+                    <ContentControl Content="{Binding CurrentInstance}"
+                                    IsVisible="{Binding HasInstances}">
+                        <ContentControl.ContentTemplate>
+                            <DataTemplate DataType="{x:Type vm:RunningTaskInstanceViewModel}">
+                                <StackPanel>
+                                    <!-- Item list -->
+                                    <ItemsControl ItemsSource="{Binding FlatTaskItems}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type vm:TodoItemViewModel}">
+                                                <Border Margin="0,1" CornerRadius="4" Padding="2" MinHeight="30">
+                                                    <DockPanel>
+                                                        <!-- Running state: spinning indicator (locked) -->
+                                                        <Panel DockPanel.Dock="Left"
+                                                               IsVisible="{Binding IsRunning}"
+                                                               Width="22" Height="22"
+                                                               VerticalAlignment="Center">
+                                                            <Button Classes="CheckBtn" Width="22" Height="22" Padding="0"
+                                                                    Command="{Binding $parent[ItemsControl].DataContext.ToggleDoneCommand}"
+                                                                    CommandParameter="{Binding}"
+                                                                    ToolTip.Tip="Force complete">
+                                                                <mi:MaterialIcon Width="16" Height="16"
+                                                                    Kind="ProgressClock"
+                                                                    Foreground="{DynamicResource AccentOrangeBrush}"
+                                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Button>
+                                                        </Panel>
+                                                        <!-- Locked (not running) -->
+                                                        <Panel DockPanel.Dock="Left"
+                                                               Width="22" Height="22"
+                                                               VerticalAlignment="Center">
+                                                            <Panel.IsVisible>
+                                                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                                    <Binding Path="IsLocked"/>
+                                                                    <Binding Path="!IsRunning"/>
+                                                                </MultiBinding>
+                                                            </Panel.IsVisible>
+                                                            <!-- Done: light gray check -->
+                                                            <mi:MaterialIcon Width="16" Height="16"
+                                                                IsVisible="{Binding IsDone}"
+                                                                Kind="CheckCircleOutline"
+                                                                Foreground="{DynamicResource TertiaryText}"
+                                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            <!-- Not done & not running: dashed circle -->
+                                                            <Canvas Width="22" Height="22">
+                                                                <Canvas.IsVisible>
+                                                                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                                        <Binding Path="!IsDone"/>
+                                                                        <Binding Path="!IsRunning"/>
+                                                                    </MultiBinding>
+                                                                </Canvas.IsVisible>
+                                                                <Ellipse Width="16" Height="16"
+                                                                         Canvas.Left="3" Canvas.Top="3"
+                                                                         Stroke="{DynamicResource TertiaryText}"
+                                                                         StrokeThickness="1.5"
+                                                                         StrokeDashArray="3,2"
+                                                                         Fill="Transparent"/>
+                                                            </Canvas>
+                                                        </Panel>
+                                                        <!-- Unlocked (not running): normal checkbox -->
+                                                        <Button DockPanel.Dock="Left" Classes="CheckBtn"
+                                                                Width="22" Height="22" Padding="0"
+                                                                Command="{Binding $parent[ItemsControl].DataContext.ToggleDoneCommand}"
+                                                                CommandParameter="{Binding}">
+                                                            <Button.IsVisible>
+                                                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                                    <Binding Path="IsNotLocked"/>
+                                                                    <Binding Path="!IsRunning"/>
+                                                                </MultiBinding>
+                                                            </Button.IsVisible>
+                                                            <Panel>
+                                                                <mi:MaterialIcon Width="16" Height="16"
+                                                                    IsVisible="{Binding IsDone}"
+                                                                    Kind="CheckCircleOutline"
+                                                                    Foreground="{DynamicResource TertiaryText}"/>
+                                                                <!-- ConsoleExecute pending: console play icon -->
+                                                                <mi:MaterialIcon Width="16" Height="16"
+                                                                    Kind="ConsoleLine"
+                                                                    Foreground="{DynamicResource AccentBlueBrush}">
+                                                                    <mi:MaterialIcon.IsVisible>
+                                                                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                                            <Binding Path="!IsDone"/>
+                                                                            <Binding Path="IsConsoleExecuteNode"/>
+                                                                        </MultiBinding>
+                                                                    </mi:MaterialIcon.IsVisible>
+                                                                </mi:MaterialIcon>
+                                                                <!-- Task pending: empty circle -->
+                                                                <mi:MaterialIcon Width="16" Height="16"
+                                                                    Kind="CircleOutline"
+                                                                    Foreground="{DynamicResource TertiaryText}">
+                                                                    <mi:MaterialIcon.IsVisible>
+                                                                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                                            <Binding Path="!IsDone"/>
+                                                                            <Binding Path="IsTaskNode"/>
+                                                                        </MultiBinding>
+                                                                    </mi:MaterialIcon.IsVisible>
+                                                                </mi:MaterialIcon>
+                                                            </Panel>
+                                                        </Button>
+                                                        <StackPanel VerticalAlignment="Center" Margin="2,0,0,0">
+                                                            <DockPanel>
+                                                                <!-- Console badge for ConsoleExecute nodes -->
+                                                                <mi:MaterialIcon DockPanel.Dock="Left"
+                                                                    IsVisible="{Binding IsConsoleExecuteNode}"
+                                                                    Kind="Console" Width="10" Height="10"
+                                                                    Foreground="{DynamicResource SecondaryText}"
+                                                                    VerticalAlignment="Center" Margin="0,0,3,0"/>
+                                                                <TextBlock Text="{Binding Title}"
+                                                                           TextTrimming="CharacterEllipsis" FontSize="12"
+                                                                           Foreground="{Binding IsDone, Converter={StaticResource DoneToTextBrush}}"/>
+                                                            </DockPanel>
+                                                            <!-- Running status text -->
+                                                            <TextBlock Text="Running..."
+                                                                       IsVisible="{Binding IsRunning}"
+                                                                       FontSize="9"
+                                                                       Foreground="{DynamicResource AccentOrangeBrush}"
+                                                                       Margin="0,1,0,0"/>
+                                                            <TextBlock Text="{Binding ForkJoinTag}" FontSize="9"
+                                                                       Foreground="{Binding ForkColorHex, Converter={StaticResource HexToBrush}}"
+                                                                       IsVisible="{Binding HasForkJoinTag}"
+                                                                       Margin="0,1,0,0"/>
+                                                        </StackPanel>
+                                                    </DockPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+
+                                    <!-- Archive countdown -->
+                                    <Border CornerRadius="6" Padding="8,6" Margin="0,4,0,0"
+                                            Background="{DynamicResource ArchiveBannerBg}"
+                                            IsVisible="{Binding IsPendingArchive}">
+                                        <DockPanel>
+                                            <Button DockPanel.Dock="Right"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    Command="{Binding UndoArchiveCommand}"
+                                                    Content="UNDO" FontSize="11" Cursor="Hand"
+                                                    Foreground="{DynamicResource SecondaryText}"
+                                                    Width="NaN" Height="NaN" CornerRadius="4" Padding="6,2"/>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <mi:MaterialIcon Kind="ArchiveArrowDown" Width="14" Height="14"
+                                                                 Foreground="{DynamicResource AccentGreenBrush}"
+                                                                 VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Archiving in " FontSize="11"
+                                                               Foreground="{DynamicResource AccentGreenBrush}"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding ArchiveCountdown}" FontSize="11"
+                                                               Foreground="{DynamicResource AccentGreenBrush}"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Text="s..." FontSize="11"
+                                                               Foreground="{DynamicResource AccentGreenBrush}"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
+                </StackPanel>
+            </ScrollViewer>
+        </DockPanel>
+        </Border>
+    </Border>
+</Window>

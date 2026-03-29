@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OnFlight Sync Schema",
+  "description": "Cross-platform data contract for OnFlight Todo App sync",
+  "version": 1,
+  "definitions": {
+    "TodoStatus": {
+      "type": "string",
+      "enum": ["Pending", "Ready", "Done", "Skipped"]
+    },
+    "FlowNodeType": {
+      "type": "string",
+      "enum": ["Task", "Loop", "Fork", "Join", "Branch"]
+    },
+    "OperationType": {
+      "type": "string",
+      "enum": ["Add", "Delete", "Update", "Check", "Uncheck", "Reorder", "Restore"]
+    },
+    "TodoItem": {
+      "type": "object",
+      "required": ["id", "title", "status", "sortOrder", "parentListId", "nodeType", "createdAt", "updatedAt", "deviceId", "isDeleted"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "title": { "type": "string" },
+        "description": { "type": ["string", "null"] },
+        "status": { "$ref": "#/definitions/TodoStatus" },
+        "sortOrder": { "type": "integer" },
+        "parentListId": { "type": "string", "format": "uuid" },
+        "subListId": { "type": ["string", "null"], "format": "uuid" },
+        "nodeType": { "$ref": "#/definitions/FlowNodeType" },
+        "flowConfigJson": { "type": ["string", "null"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "deviceId": { "type": "string" },
+        "isDeleted": { "type": "boolean" }
+      }
+    },
+    "TodoList": {
+      "type": "object",
+      "required": ["id", "name", "createdAt", "updatedAt", "deviceId", "isDeleted"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "parentItemId": { "type": ["string", "null"], "format": "uuid" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "deviceId": { "type": "string" },
+        "isDeleted": { "type": "boolean" }
+      }
+    },
+    "FlowNode": {
+      "type": "object",
+      "required": ["id", "nodeType", "todoItemId", "updatedAt", "deviceId", "isDeleted"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "nodeType": { "$ref": "#/definitions/FlowNodeType" },
+        "parentId": { "type": ["string", "null"], "format": "uuid" },
+        "condition": { "type": ["string", "null"] },
+        "loopCount": { "type": ["integer", "null"] },
+        "todoItemId": { "type": "string", "format": "uuid" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "deviceId": { "type": "string" },
+        "isDeleted": { "type": "boolean" }
+      }
+    },
+    "OperationLog": {
+      "type": "object",
+      "required": ["id", "listId", "operationType", "timestamp", "deviceId"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "listId": { "type": "string", "format": "uuid" },
+        "operationType": { "$ref": "#/definitions/OperationType" },
+        "detail": { "type": ["string", "null"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "deviceId": { "type": "string" }
+      }
+    }
+  }
+}

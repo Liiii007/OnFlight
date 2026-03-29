@@ -1,0 +1,577 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ═══════════ Apple-style Design Tokens ═══════════ -->
+    <!-- [Style:LightTheme] [Style:DarkTheme] [Style:AccentColors] [Style:LayoutTokens] -->
+
+    <Styles.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <!-- [Style:LightTheme] Light -->
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="AppBackground" Color="#F2F2F7"/>
+                    <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/>
+                    <SolidColorBrush x:Key="SidebarBackground" Color="#E8E8ED"/>
+                    <SolidColorBrush x:Key="ContentBackground" Color="#FFFFFF"/>
+                    <SolidColorBrush x:Key="SeparatorBrush" Color="#E5E5EA"/>
+                    <SolidColorBrush x:Key="PrimaryText" Color="#000000"/>
+                    <SolidColorBrush x:Key="SecondaryText" Color="#8E8E93"/>
+                    <SolidColorBrush x:Key="TertiaryText" Color="#C7C7CC"/>
+                    <SolidColorBrush x:Key="HoverBackground" Color="#1A007AFF"/>
+                    <SolidColorBrush x:Key="SelectedBackground" Color="#33007AFF"/>
+                    <SolidColorBrush x:Key="ArchiveBannerBg" Color="#E8F5E9"/>
+                    <SolidColorBrush x:Key="ForkChildBg" Color="#F9F9FB"/>
+                    <SolidColorBrush x:Key="InputBorderBrush" Color="#D1D1D6"/>
+                    <SolidColorBrush x:Key="InputFocusBorderBrush" Color="#007AFF"/>
+                    <SolidColorBrush x:Key="InputBackground" Color="#FFFFFF"/>
+                    <SolidColorBrush x:Key="IconForeground" Color="#3C3C43"/>
+                    <SolidColorBrush x:Key="RightPanelBackground" Color="#F9F9FB"/>
+                    <SolidColorBrush x:Key="TitleBarActionBg" Color="#E5E5EA"/>
+                    <SolidColorBrush x:Key="TitleBarActionFg" Color="#333333"/>
+                </ResourceDictionary>
+                <!-- [Style:DarkTheme] Dark -->
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="AppBackground" Color="#1C1C1E"/>
+                    <SolidColorBrush x:Key="CardBackground" Color="#2C2C2E"/>
+                    <SolidColorBrush x:Key="SidebarBackground" Color="#161618"/>
+                    <SolidColorBrush x:Key="ContentBackground" Color="#2C2C2E"/>
+                    <SolidColorBrush x:Key="SeparatorBrush" Color="#38383A"/>
+                    <SolidColorBrush x:Key="PrimaryText" Color="#FFFFFF"/>
+                    <SolidColorBrush x:Key="SecondaryText" Color="#8E8E93"/>
+                    <SolidColorBrush x:Key="TertiaryText" Color="#48484A"/>
+                    <SolidColorBrush x:Key="HoverBackground" Color="#1A0A84FF"/>
+                    <SolidColorBrush x:Key="SelectedBackground" Color="#330A84FF"/>
+                    <SolidColorBrush x:Key="ArchiveBannerBg" Color="#1B3A1B"/>
+                    <SolidColorBrush x:Key="ForkChildBg" Color="#2A2A2C"/>
+                    <SolidColorBrush x:Key="InputBorderBrush" Color="#48484A"/>
+                    <SolidColorBrush x:Key="InputFocusBorderBrush" Color="#0A84FF"/>
+                    <SolidColorBrush x:Key="InputBackground" Color="#2C2C2E"/>
+                    <SolidColorBrush x:Key="IconForeground" Color="#EBEBF5"/>
+                    <SolidColorBrush x:Key="RightPanelBackground" Color="#2A2A2C"/>
+                    <SolidColorBrush x:Key="TitleBarActionBg" Color="#3A3A3C"/>
+                    <SolidColorBrush x:Key="TitleBarActionFg" Color="#EBEBF5"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <!-- [Style:AccentColors] Shared accent colors -->
+            <SolidColorBrush x:Key="AccentBlueBrush" Color="#007AFF"/>
+            <SolidColorBrush x:Key="AccentGreenBrush" Color="#34C759"/>
+            <SolidColorBrush x:Key="AccentOrangeBrush" Color="#FF9500"/>
+            <SolidColorBrush x:Key="AccentRedBrush" Color="#FF3B30"/>
+            <SolidColorBrush x:Key="AccentPurpleBrush" Color="#AF52DE"/>
+            <SolidColorBrush x:Key="AccentTealBrush" Color="#5AC8FA"/>
+            <SolidColorBrush x:Key="AccentIndigoBrush" Color="#5856D6"/>
+
+            <!-- [Style:LayoutTokens] -->
+            <CornerRadius x:Key="CardCornerRadius">12</CornerRadius>
+            <CornerRadius x:Key="ButtonCornerRadius">8</CornerRadius>
+            <CornerRadius x:Key="InputCornerRadius">10</CornerRadius>
+            <CornerRadius x:Key="FloatingCornerRadius">12</CornerRadius>
+        </ResourceDictionary>
+    </Styles.Resources>
+
+    <!-- ═══════════ Card Style ═══════════ -->
+    <!-- [Style:Card] -->
+    <Style Selector="Border.Card">
+        <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource CardCornerRadius}"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Margin" Value="4"/>
+        <Setter Property="BoxShadow" Value="0 1 3 0 #1A000000"/>
+        <Setter Property="Opacity" Value="1"/>
+        <Setter Property="RenderTransform" Value="translateY(0px)"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.3" Easing="CubicEaseOut"/>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.3" Easing="CubicEaseOut"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- ═══════════ Section Header ═══════════ -->
+    <!-- [Style:SectionHeader] -->
+    <Style Selector="TextBlock.SectionHeader">
+        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+    </Style>
+
+    <!-- ═══════════ Breadcrumb Button ═══════════ -->
+    <!-- [Style:Breadcrumb] -->
+    <Style Selector="Button.Breadcrumb">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{DynamicResource AccentTealBrush}"/>
+    </Style>
+    <Style Selector="Button.Breadcrumb /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="Button.Breadcrumb:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <!-- ═══════════ Progress Bar ═══════════ -->
+    <!-- [Style:ProgressBar] -->
+    <Style Selector="ProgressBar.Apple">
+        <Setter Property="Height" Value="6"/>
+        <Setter Property="MinHeight" Value="6"/>
+        <Setter Property="Foreground" Value="{DynamicResource AccentGreenBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SeparatorBrush}"/>
+        <Setter Property="CornerRadius" Value="3"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="ProgressBar.Apple /template/ Border#PART_Indicator">
+        <Setter Property="CornerRadius" Value="3"/>
+    </Style>
+
+    <!-- ═══════════ List Item with hover transition ═══════════ -->
+    <!-- [Style:ListItem] -->
+    <Style Selector="Border.ListItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource CardCornerRadius}"/>
+        <Setter Property="Padding" Value="10,4"/>
+        <Setter Property="Margin" Value="2,0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.1"/>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut"/>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.ListItem:pointerover">
+        <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+    </Style>
+
+    <!-- ═══════════ Floating Ball ═══════════ -->
+    <!-- [Style:FloatingBall] -->
+    <Style Selector="Border.FloatingBall">
+        <Setter Property="Width" Value="56"/>
+        <Setter Property="Height" Value="56"/>
+        <Setter Property="CornerRadius" Value="28"/>
+        <Setter Property="Background" Value="{DynamicResource AccentBlueBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="BoxShadow" Value="0 4 12 0 #33000000"/>
+    </Style>
+
+    <!-- ═══════════ Icon Button (white icon on blue circle) ═══════════ -->
+    <!-- [Style:IconBtn] -->
+    <Style Selector="Button.IconBtn">
+        <Setter Property="Background" Value="{DynamicResource AccentBlueBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="5"/>
+        <Setter Property="Width" Value="26"/>
+        <Setter Property="Height" Value="26"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="CornerRadius" Value="13"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Opacity" Value="0.85"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.IconBtn:pointerover">
+        <Setter Property="Opacity" Value="1"/>
+    </Style>
+    <Style Selector="Button.IconBtn /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="White"/>
+    </Style>
+    <Style Selector="Button.IconBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="Button.IconBtn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <!-- ═══════════ Plain Icon Button (no background) ═══════════ -->
+    <!-- [Style:PlainIconBtn] -->
+    <Style Selector="Button.PlainIconBtn">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="4"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.PlainIconBtn /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.PlainIconBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+    </Style>
+    <Style Selector="Button.PlainIconBtn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <!-- ═══════════ Checkbox Button (circle outline / green check / gray pressed) ═══════════ -->
+    <!-- [Style:CheckBtn] -->
+    <Style Selector="Button.CheckBtn">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.CheckBtn:pressed">
+        <Setter Property="Background" Value="#BBBBBB"/>
+    </Style>
+    <Style Selector="Button.CheckBtn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="#BBBBBB"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="Button.CheckBtn /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="Button.CheckBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <!-- ═══════════ Apple-style FAB (rounded rect, not circle) ═══════════ -->
+    <!-- [Style:Fab] -->
+    <Style Selector="Button.Fab">
+        <Setter Property="Background" Value="{DynamicResource AccentBlueBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource ButtonCornerRadius}"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+    <Style Selector="Button.Fab /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="White"/>
+    </Style>
+    <Style Selector="Button.Fab:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="Button.Fab:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Opacity" Value="0.85"/>
+    </Style>
+
+    <!-- ═══════════ TextBox ═══════════ -->
+    <!-- [Style:TextBox] -->
+    <Style Selector="TextBox">
+        <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource InputCornerRadius}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+        <Setter Property="Padding" Value="10,8"/>
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource InputFocusBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1.5"/>
+    </Style>
+    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource InputFocusBorderBrush}"/>
+    </Style>
+
+    <!-- [Style:InlineRename] Inline rename: bottom underline only when focused -->
+    <Style Selector="TextBox.InlineRename /template/ Border#PART_BorderElement">
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="CornerRadius" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="MinHeight" Value="0"/>
+    </Style>
+    <Style Selector="TextBox.InlineRename:focus /template/ Border#PART_BorderElement">
+        <Setter Property="BorderThickness" Value="0,0,0,1.5"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBlueBrush}"/>
+    </Style>
+    <Style Selector="TextBox.InlineRename:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="Transparent"/>
+    </Style>
+    <Style Selector="TextBox.InlineRename:focus:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="BorderThickness" Value="0,0,0,1.5"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBlueBrush}"/>
+    </Style>
+
+    <!-- ═══════════ CheckBox ═══════════ -->
+    <!-- [Style:CheckBox] -->
+    <Style Selector="CheckBox">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource CardCornerRadius}"/>
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="Margin" Value="2,1"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.1"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="CheckBox:pointerover">
+        <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+    </Style>
+
+    <!-- ═══════════ ComboBox ═══════════ -->
+    <!-- [Style:ComboBox] -->
+    <Style Selector="ComboBox">
+        <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource CardCornerRadius}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+        <Setter Property="Padding" Value="10,6"/>
+    </Style>
+    <Style Selector="ComboBox:pointerover /template/ Border#border">
+        <Setter Property="BorderBrush" Value="{DynamicResource InputFocusBorderBrush}"/>
+    </Style>
+    <Style Selector="ComboBox:focus /template/ Border#border">
+        <Setter Property="BorderBrush" Value="{DynamicResource InputFocusBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1.5"/>
+    </Style>
+    <Style Selector="ComboBox /template/ Popup Border">
+        <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource SeparatorBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource CardCornerRadius}"/>
+        <Setter Property="Padding" Value="4"/>
+    </Style>
+    <Style Selector="ComboBoxItem">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="Margin" Value="2,1"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource CardCornerRadius}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+    <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource CardCornerRadius}"/>
+    </Style>
+    <Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SelectedBackground}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource CardCornerRadius}"/>
+    </Style>
+
+    <!-- ═══════════ Panel Tab (capsule-style tab header) ═══════════ -->
+    <!-- [Style:PanelTab] -->
+    <Style Selector="TabControl.PanelTabs">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+    </Style>
+    <Style Selector="TabControl.PanelTabs > TabItem">
+        <Setter Property="FontSize" Value="15"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="14,6"/>
+        <Setter Property="Margin" Value="0,0,6,0"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource InputCornerRadius}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="MinHeight" Value="0"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                <BrushTransition Property="Foreground" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="TabControl.PanelTabs > TabItem:pointerover">
+        <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+    </Style>
+    <Style Selector="TabControl.PanelTabs > TabItem:selected">
+        <Setter Property="Background" Value="{DynamicResource AccentBlueBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+    </Style>
+    <Style Selector="TabControl.PanelTabs > TabItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                <BrushTransition Property="Foreground" Duration="0:0:0.2"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="TabControl.PanelTabs > TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+        <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="TabControl.PanelTabs > TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource AccentBlueBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <!-- PART_SelectedPipe does not exist in SimpleTheme — no override needed -->
+
+    <!-- ═══════════ Window Control Buttons ═══════════ -->
+    <!-- [Style:WinBtn] [Style:WinClose] -->
+    <Style Selector="Button.WinBtn">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Width" Value="24"/>
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.WinBtn /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.WinBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+    </Style>
+    <Style Selector="Button.WinClose:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="{DynamicResource AccentRedBrush}"/>
+    </Style>
+
+    <!-- ═══════════ ListBox / ListBoxItem ═══════════ -->
+    <!-- [Style:ListBox] -->
+    <Style Selector="ListBox">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="ListBoxItem">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="Margin" Value="0,1"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SelectedBackground}"/>
+    </Style>
+    <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SelectedBackground}"/>
+    </Style>
+    <Style Selector="ListBoxItem:selected:focus /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SelectedBackground}"/>
+    </Style>
+
+    <!-- ═══════════ ScrollViewer / ScrollBar ═══════════ -->
+    <!-- [Style:ScrollBar] -->
+    <Style Selector="ScrollBar">
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ScrollBar:vertical">
+        <Setter Property="Width" Value="6"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="ScrollBar">
+                <Border Background="Transparent" CornerRadius="3" ClipToBounds="True">
+                    <Track Minimum="{TemplateBinding Minimum}"
+                           Maximum="{TemplateBinding Maximum}"
+                           Value="{TemplateBinding Value, Mode=TwoWay}"
+                           ViewportSize="{TemplateBinding ViewportSize}"
+                           Orientation="Vertical"
+                           IsDirectionReversed="True">
+                        <Thumb>
+                            <Thumb.Template>
+                                <ControlTemplate>
+                                    <Border Background="{DynamicResource TertiaryText}"
+                                            CornerRadius="3" MinHeight="20"/>
+                                </ControlTemplate>
+                            </Thumb.Template>
+                        </Thumb>
+                    </Track>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ScrollBar:horizontal">
+        <Setter Property="Height" Value="6"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="ScrollBar">
+                <Border Background="Transparent" CornerRadius="3" ClipToBounds="True">
+                    <Track Minimum="{TemplateBinding Minimum}"
+                           Maximum="{TemplateBinding Maximum}"
+                           Value="{TemplateBinding Value, Mode=TwoWay}"
+                           ViewportSize="{TemplateBinding ViewportSize}"
+                           Orientation="Horizontal">
+                        <Thumb>
+                            <Thumb.Template>
+                                <ControlTemplate>
+                                    <Border Background="{DynamicResource TertiaryText}"
+                                            CornerRadius="3" MinWidth="20"/>
+                                </ControlTemplate>
+                            </Thumb.Template>
+                        </Thumb>
+                    </Track>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ScrollBar /template/ Thumb">
+        <Setter Property="Opacity" Value="0.5"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="ScrollBar:pointerover /template/ Thumb">
+        <Setter Property="Opacity" Value="0.8"/>
+    </Style>
+
+    <!-- ═══════════ Flyout ═══════════ -->
+    <!-- [Style:Flyout] -->
+    <Style Selector="FlyoutPresenter">
+        <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource SeparatorBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource FloatingCornerRadius}"/>
+        <Setter Property="Padding" Value="12"/>
+    </Style>
+
+    <!-- ═══════════ ToolTip ═══════════ -->
+    <!-- [Style:ToolTip] -->
+    <Style Selector="ToolTip">
+        <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource SeparatorBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="FontSize" Value="12"/>
+    </Style>
+
+</Styles>
