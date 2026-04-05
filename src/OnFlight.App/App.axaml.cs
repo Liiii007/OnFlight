@@ -1,7 +1,10 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OnFlight.App.ViewModels;
@@ -18,6 +21,10 @@ namespace OnFlight.App;
 public partial class App : Application
 {
     public static IServiceProvider Services { get; private set; } = null!;
+
+    private TrayIcon? _trayIcon;
+    private static bool _isQuitting;
+    public static bool IsApplicationQuitting => _isQuitting;
 
     public override void Initialize()
     {
@@ -88,11 +95,117 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             desktop.MainWindow = new Views.MainWindow();
             desktop.ShutdownRequested += (_, _) => Log.CloseAndFlush();
+            EnsureTrayIcon();
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void EnsureTrayIcon()
+    {
+        if (_trayIcon != null)
+            return;
+
+        WindowIcon? winIcon = null;
+        try
+        {
+            var uri = new Uri("avares://OnFlight.App/Assets/tray.png");
+            if (AssetLoader.Exists(uri))
+                winIcon = new WindowIcon(AssetLoader.Open(uri));
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Tray icon asset could not be loaded");
+        }
+
+        _trayIcon = new TrayIcon
+        {
+            Icon = winIcon,
+            ToolTipText = "OnFlight",
+            IsVisible = true,
+        };
+        _trayIcon.Clicked += (_, _) => ShowMainWindow();
+
+        var menu = new NativeMenu();
+        var showMain = new NativeMenuItem("Show Main Window");
+        showMain.Click += (_, _) => ShowMainWindow();
+        var newFloat = new NativeMenuItem("New Floating Window");
+        newFloat.Click += (_, _) => OpenNewFloatingWindow();
+        var exitItem = new NativeMenuItem("Exit");
+        exitItem.Click += (_, _) => QuitApplication();
+        menu.Items.Add(showMain);
+        menu.Items.Add(newFloat);
+        menu.Items.Add(new NativeMenuItemSeparator());
+        menu.Items.Add(exitItem);
+        _trayIcon.Menu = menu;
+
+        var icons = TrayIcon.GetIcons(this);
+        if (icons == null)
+        {
+            icons = new TrayIcons();
+            TrayIcon.SetIcons(this, icons);
+        }
+
+        icons.Add(_trayIcon);
+    }
+
+    public void ShowMainWindow()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+                return;
+            if (desktop.MainWindow is not Views.MainWindow mw)
+                return;
+            if (!mw.IsVisible)
+                mw.Show();
+            if (mw.WindowState == WindowState.Minimized)
+                mw.WindowState = WindowState.Normal;
+            mw.Activate();
+        });
+    }
+
+    private void OpenNewFloatingWindow()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            var vm = Services.GetRequiredService<FloatingViewModel>();
+            var w = new Views.FloatingWindow(vm);
+            w.Show();
+        });
+    }
+
+    public void QuitApplication()
+    {
+        _isQuitting = true;
+
+        void DoShutdown()
+        {
+            if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+                return;
+
+            try
+            {
+                var icons = TrayIcon.GetIcons(this);
+                if (icons != null && _trayIcon != null)
+                    icons.Remove(_trayIcon);
+            }
+            finally
+            {
+                _trayIcon?.Dispose();
+                _trayIcon = null;
+            }
+
+            desktop.Shutdown();
+        }
+
+        if (Dispatcher.UIThread.CheckAccess())
+            DoShutdown();
+        else
+            Dispatcher.UIThread.Post(DoShutdown);
     }
 
     public void ApplyThemeFromSettings(AppSettings settings)

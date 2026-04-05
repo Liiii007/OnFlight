@@ -25,6 +25,7 @@ public partial class MainWindow : Window
     private static readonly Color LightNewListTint = Color.Parse("#FFFFFF");
     private static readonly Color DarkNewListTint = Color.Parse("#2C2C2E");
 
+    private bool _isShiftHeld;
     private bool _isDragging;
     private bool _dragPending;
     private Point _dragStartPoint;
@@ -38,6 +39,10 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        KeyDown += (_, e) => { if (e.Key is Key.LeftShift or Key.RightShift) _isShiftHeld = true; };
+        KeyUp += (_, e) => { if (e.Key is Key.LeftShift or Key.RightShift) _isShiftHeld = false; };
+        Deactivated += (_, _) => _isShiftHeld = false;
+        Closing += OnMainWindowClosing;
         DataContext = App.Services.GetRequiredService<MainViewModel>();
         Loaded += async (_, _) =>
         {
@@ -589,9 +594,24 @@ public partial class MainWindow : Window
             : WindowState.Maximized;
     }
 
+    private void OnMainWindowClosing(object? sender, WindowClosingEventArgs e)
+    {
+        if (App.IsApplicationQuitting)
+            return;
+        e.Cancel = true;
+        Hide();
+    }
+
     private void OnCloseClick(object? sender, RoutedEventArgs e)
     {
-        Close();
+        if (_isShiftHeld)
+        {
+            if (Application.Current is App app)
+                app.QuitApplication();
+            return;
+        }
+
+        Hide();
     }
 
     private void OnOpenFloatingWindow(object? sender, RoutedEventArgs e)

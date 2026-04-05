@@ -11,7 +11,8 @@
         Background="Transparent"
         Topmost="True"
         ShowInTaskbar="False"
-        CanResize="False">
+        CanResize="False"
+        Icon="avares://OnFlight.App/Assets/tray.png">
 
     <!-- [Style:Shadows] [Style:Acrylic] [Style:CheckBtn] [Style:Icons] -->
     <Border CornerRadius="{DynamicResource FloatingCornerRadius}" Margin="16"

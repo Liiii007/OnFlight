@@ -140,7 +140,7 @@ Avalonia UI application layer. Bootstraps DI, assembles the UI.
 |------|---------|
 | `Program.cs` | Application entry point: `AppBuilder.Configure<App>().UsePlatformDetect()` |
 | `App.axaml` | Avalonia resources: FluentTheme (follows system Light/Dark), custom `Theme.axaml`, converter instances |
-| `App.axaml.cs` | DI container setup: configures Serilog file logging + global exception handlers, registers all repositories, services, ViewModels, and `TaskEventBus`. Initializes database on startup. |
+| `App.axaml.cs` | DI container setup: configures Serilog file logging + global exception handlers, registers all repositories, services, ViewModels, and `TaskEventBus`. Initializes database on startup. Sets `ShutdownMode.OnExplicitShutdown` and manages background-resident lifecycle via `TrayIcon` (system tray icon with left-click restore and right-click NativeMenu: Show Main Window / New Floating Window / Exit). Exposes `ShowMainWindow()`, `OpenNewFloatingWindow()`, `QuitApplication()` (disposes tray via try/finally before `desktop.Shutdown()`), and `IsApplicationQuitting` flag. |
 
 ### ViewModels (`ViewModels/`)
 
@@ -162,9 +162,9 @@ Avalonia UI application layer. Bootstraps DI, assembles the UI.
 | File | Purpose |
 |------|---------|
 | `MainWindow.axaml` | Primary window (Apple-style): five-column layout — left sidebar (list selector), splitter, center (breadcrumbs + progress + add-item + item list with drag-reorder), splitter, right panel (tabbed Config/Running/History). Title bar with floating-window and run buttons. |
-| `MainWindow.axaml.cs` | Code-behind: resolves MainViewModel from DI, handles drag-reorder logic, Enter-key shortcuts, inline rename, running card click-to-attach, opens FloatingWindow. |
+| `MainWindow.axaml.cs` | Code-behind: resolves MainViewModel from DI, handles drag-reorder logic, Enter-key shortcuts, inline rename, running card click-to-attach, opens FloatingWindow. Implements close-to-tray behavior: `OnCloseClick` hides on normal close, calls `QuitApplication()` on Shift+close; `OnMainWindowClosing` cancels system close (Alt+F4) and hides unless `IsApplicationQuitting`. Tracks Shift state via KeyDown/KeyUp + Deactivated reset. |
 | `FloatingWindow.axaml` | Borderless, transparent, topmost floating widget with Apple-style rounded card. Instance carousel with task list, checkboxes, pagination, archive countdown. |
-| `FloatingWindow.axaml.cs` | Code-behind: `BeginMoveDrag` on header pointer-pressed, double-click to return to main window, close. |
+| `FloatingWindow.axaml.cs` | Code-behind: `BeginMoveDrag` on header pointer-pressed, double-click to return to main window, close. `Activated` handler calls `LoadAvailableListsAsync()` (with try/catch + Serilog error logging) to refresh the available lists dropdown when the user switches back to a floating window. |
 
 ### Converters (`Converters/`)
 
@@ -341,3 +341,30 @@ The application uses **Serilog** as the logging backend, bridged to `Microsoft.E
 | `MainViewModel` | `ILogger<MainViewModel>` | Warning: targetListId parse failure. |
 | `ItemConfigViewModel` | `ILogger<ItemConfigViewModel>` | Warning: FlowConfig parse failure. Error: auto-save failure. |
 | `FloatingViewModel` | `ILogger<FloatingViewModel>` | (Reserved for future use) |
+
+### Background Resident & System Tray
+
+The application stays running in the background when the user closes the main window, using a system tray icon to manage visibility and exit.
+
+**Lifecycle:**
+
+```
+App Start → MainWindow + TrayIcon visible
+         ↓
+Close (no Shift) → MainWindow.Hide() → process stays alive, TrayIcon remains
+         ↓
+Tray left-click → MainWindow.Show() + Activate() + restore from Minimized
+Tray menu "New Floating Window" → new FloatingWindow instance (multi-instance)
+Tray menu "Exit" / Shift+Close → QuitApplication()
+         ↓
+QuitApplication → _isQuitting=true → try{Remove from TrayIcons} finally{Dispose _trayIcon} → desktop.Shutdown()
+```
+
+**Key implementation points:**
+
+- `ShutdownMode.OnExplicitShutdown` prevents automatic process exit when the last window is hidden.
+- `_isQuitting` flag coordinates `MainWindow.Closing` handler: when false, cancels close and hides; when true, allows the close to proceed.
+- Close button uses `Click` event (not `PointerPressed`, which `Button` swallows internally). Shift state is tracked via `KeyDown`/`KeyUp` + `Deactivated` reset.
+- `TrayIcon` is created in code-behind (`EnsureTrayIcon`), not XAML, with icon loaded from `avares://OnFlight.App/Assets/tray.png`.
+- Tray menu items use English text: "Show Main Window", "New Floating Window", "Exit".
+- FloatingWindow refreshes its available lists dropdown on `Activated` to stay in sync after changes in MainWindow.

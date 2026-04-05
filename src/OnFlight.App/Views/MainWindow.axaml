@@ -13,7 +13,8 @@
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="-1"
-        SystemDecorations="BorderOnly">
+        SystemDecorations="BorderOnly"
+        Icon="avares://OnFlight.App/Assets/tray.png">
 
     <Grid x:Name="MainGrid">
         <Grid.RowDefinitions>

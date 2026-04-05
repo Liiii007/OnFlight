@@ -141,7 +141,7 @@ Avalonia UI 应用层。引导 DI，组装 UI。
 |------|------|
 | `Program.cs` | 应用入口点：`AppBuilder.Configure<App>().UsePlatformDetect()` |
 | `App.axaml` | Avalonia 资源：FluentTheme（跟随系统明/暗模式）、自定义 `Theme.axaml`、转换器实例 |
-| `App.axaml.cs` | DI 容器配置：配置 Serilog 文件日志 + 全局异常处理，注册所有仓储、服务、ViewModel 和 `TaskEventBus`。启动时初始化数据库。 |
+| `App.axaml.cs` | DI 容器配置：配置 Serilog 文件日志 + 全局异常处理，注册所有仓储、服务、ViewModel 和 `TaskEventBus`。启动时初始化数据库。设置 `ShutdownMode.OnExplicitShutdown`，通过 `TrayIcon` 管理后台驻留生命周期（系统托盘图标：左键恢复主窗口，右键 NativeMenu：Show Main Window / New Floating Window / Exit）。暴露 `ShowMainWindow()`、`OpenNewFloatingWindow()`、`QuitApplication()`（退出前通过 try/finally 释放托盘后调用 `desktop.Shutdown()`）及 `IsApplicationQuitting` 标志。 |
 
 ### 视图模型 (`ViewModels/`)
 
@@ -163,9 +163,9 @@ Avalonia UI 应用层。引导 DI，组装 UI。
 | 文件 | 用途 |
 |------|------|
 | `MainWindow.axaml` | 主窗口（Apple 风格）：五列布局 — 左侧边栏（列表选择器）、分割条、中间区域（面包屑 + 进度条 + 添加项 + 可拖拽重排序的项目列表）、分割条、右侧面板（分页式配置/运行中/历史）。标题栏含浮动窗口和运行按钮。 |
-| `MainWindow.axaml.cs` | Code-behind：从 DI 解析 MainViewModel，处理拖拽重排序逻辑、Enter 键快捷操作、内联重命名、运行卡片点击附加、打开浮动窗口。 |
+| `MainWindow.axaml.cs` | Code-behind：从 DI 解析 MainViewModel，处理拖拽重排序逻辑、Enter 键快捷操作、内联重命名、运行卡片点击附加、打开浮动窗口。实现关闭进托盘行为：`OnCloseClick` 无 Shift 时隐藏窗口，Shift+关闭时调用 `QuitApplication()`；`OnMainWindowClosing` 拦截系统关闭（Alt+F4）并隐藏，除非 `IsApplicationQuitting`。通过 KeyDown/KeyUp + Deactivated 重置追踪 Shift 状态。 |
 | `FloatingWindow.axaml` | 无边框、透明、置顶的浮动小窗口，带 Apple 风格圆角卡片。实例轮播含任务列表、复选框、分页、归档倒计时。 |
-| `FloatingWindow.axaml.cs` | Code-behind：标题栏按下时 `BeginMoveDrag`，双击返回主窗口，关闭。 |
+| `FloatingWindow.axaml.cs` | Code-behind：标题栏按下时 `BeginMoveDrag`，双击返回主窗口，关闭。`Activated` 处理器调用 `LoadAvailableListsAsync()`（带 try/catch + Serilog 错误日志），在用户切换回悬浮窗时刷新可用列表下拉框。 |
 
 ### 转换器 (`Converters/`)
 
@@ -343,3 +343,30 @@ Transient:  FloatingViewModel（每个浮动窗口实例一个）
 | `MainViewModel` | `ILogger<MainViewModel>` | Warning：targetListId 解析失败。 |
 | `ItemConfigViewModel` | `ILogger<ItemConfigViewModel>` | Warning：FlowConfig 解析失败。Error：自动保存失败。 |
 | `FloatingViewModel` | `ILogger<FloatingViewModel>` | （预留未来使用） |
+
+### 后台驻留与系统托盘
+
+应用在用户关闭主窗口时保持后台运行，通过系统托盘图标管理窗口显隐与退出。
+
+**生命周期：**
+
+```
+应用启动 → 主窗口 + TrayIcon 可见
+         ↓
+关闭（无 Shift） → MainWindow.Hide() → 进程继续存活，托盘图标保留
+         ↓
+托盘左键 → MainWindow.Show() + Activate() + 从最小化恢复
+托盘菜单 "New Floating Window" → 新建 FloatingWindow 实例（多实例）
+托盘菜单 "Exit" / Shift+关闭 → QuitApplication()
+         ↓
+QuitApplication → _isQuitting=true → try{从 TrayIcons 移除} finally{Dispose _trayIcon} → desktop.Shutdown()
+```
+
+**关键实现要点：**
+
+- `ShutdownMode.OnExplicitShutdown` 防止最后一个窗口隐藏后进程自动退出。
+- `_isQuitting` 标志协调 `MainWindow.Closing` 处理：为 false 时取消关闭并隐藏；为 true 时允许真正关闭。
+- 关闭按钮使用 `Click` 事件（而非 `PointerPressed`，后者会被 `Button` 内部吞掉）。Shift 状态通过 `KeyDown`/`KeyUp` + `Deactivated` 重置追踪。
+- `TrayIcon` 在 Code-behind 中创建（`EnsureTrayIcon`），图标从 `avares://OnFlight.App/Assets/tray.png` 加载。
+- 托盘菜单文案为英文："Show Main Window"、"New Floating Window"、"Exit"。
+- FloatingWindow 在 `Activated` 时刷新可用列表下拉框，保持与主窗口的数据同步。

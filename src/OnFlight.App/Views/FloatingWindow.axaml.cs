@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Styling;
 using OnFlight.App.ViewModels;
+using Serilog;
 
 namespace OnFlight.App.Views;
 
@@ -19,13 +20,27 @@ public partial class FloatingWindow : Window
         InitializeComponent();
         Loaded += (_, _) => ApplyAcrylicForCurrentTheme();
         ActualThemeVariantChanged += (_, _) => ApplyAcrylicForCurrentTheme();
+        Activated += OnActivated;
     }
 
     public FloatingWindow(FloatingViewModel viewModel) : this()
     {
         _viewModel = viewModel;
         DataContext = _viewModel;
-        Loaded += async (_, _) => await _viewModel.LoadAvailableListsAsync();
+    }
+
+    private async void OnActivated(object? sender, EventArgs e)
+    {
+        var vm = _viewModel ?? DataContext as FloatingViewModel;
+        if (vm == null) return;
+        try
+        {
+            await vm.LoadAvailableListsAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to refresh floating window lists on activate");
+        }
     }
 
     private void ApplyAcrylicForCurrentTheme()

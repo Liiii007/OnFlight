@@ -26,4 +26,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\tray.png" />
+  </ItemGroup>
+
 </Project>
